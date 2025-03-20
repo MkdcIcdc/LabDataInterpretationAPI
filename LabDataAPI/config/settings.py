@@ -21,6 +21,9 @@ ALLOWED_HOSTS = []
 NEW_APPS = [
     "rest_framework",
     "api",
+    "db2app",
+    "ibm_db_django",
+    "pandas",
 ]
 # Application definition
 
@@ -73,11 +76,23 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
+        "NAME": "LabResearchData",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "localhost",
+        "PORT": "5432",
+    },
+    'db2': {
+        "ENGINE": "ibm_db_django",
+        "NAME": "medstat",
+        "USER": "db2admin",
+        "PASSWORD": "1",
+        "HOST": "172.16.1.61",
+        "PORT": "50000",
+        "OPTIONS": {
+            "DATABASE": "medstat",
+            "PROTOCOL": "TCPIP",
+        }
     }
 }
 
@@ -122,4 +137,4 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-AUTH_USER_MODEL = "api.User"
+# AUTH_USER_MODEL = "api.User"
