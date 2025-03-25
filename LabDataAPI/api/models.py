@@ -11,7 +11,7 @@ class Patient(models.Model):
     )
     
     full_name = models.CharField(max_length=100)
-    age = models.IntegerField()
+    age = models.IntegerField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_TYPE)
     lotus_id = models.CharField(max_length=50, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -42,6 +42,7 @@ class NeuralNetQueue(models.Model):
         ('error', 'Error'),
     )
     
+    queue_id = models.IntegerField(unique=True, default=0)
     patient_data = models.ForeignKey(PatientData, on_delete=models.CASCADE, related_name="queue")
     status = models.CharField(max_length=20, choices=STATUS_TYPE, default='pending')
     result = models.JSONField(null=True, blank=True)  # Ответ от нейросети
