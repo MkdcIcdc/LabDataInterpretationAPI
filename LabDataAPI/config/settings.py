@@ -24,6 +24,8 @@ NEW_APPS = [
     "db2app",
     "ibm_db_django",
     "pandas",
+    "drf_yasg",
+    "django_celery_results",
 ]
 # Application definition
 
@@ -82,18 +84,18 @@ DATABASES = {
         "HOST": "localhost",
         "PORT": "5432",
     },
-    'db2': {
-        "ENGINE": "ibm_db_django",
-        "NAME": "medstat",
-        "USER": "db2admin",
-        "PASSWORD": "1",
-        "HOST": "172.16.1.61",
-        "PORT": "50000",
-        "OPTIONS": {
-            "DATABASE": "medstat",
-            "PROTOCOL": "TCPIP",
-        }
-    }
+    # 'db2': {
+    #     "ENGINE": "ibm_db_django",
+    #     "NAME": "medstat",
+    #     "USER": "db2admin",
+    #     "PASSWORD": "1",
+    #     "HOST": "172.16.1.61",
+    #     "PORT": "50000",
+    #     "OPTIONS": {
+    #         "DATABASE": "medstat",
+    #         "PROTOCOL": "TCPIP",
+    #     }
+    # }
 }
 
 
