@@ -34,6 +34,6 @@ class PatientDataViewSet(viewsets.ViewSet):
         """
         Получает результат от нейросети по номеру очереди.
         """
-        result = get_object_or_404(NeuralNetResult, patient_data_id=pk)
+        result = get_object_or_404(NeuralNetQueue, patient_data_id=pk)
         serializer = NeuralNetResultSerializer(result)
         return Response(serializer.data, status=status.HTTP_200_OK)
