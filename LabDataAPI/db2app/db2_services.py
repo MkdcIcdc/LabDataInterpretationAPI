@@ -2,35 +2,62 @@ import ibm_db
 import ibm_db_dbi
 import pandas as pd
 
-# Подключение к DB2
-DB2_DSN = "DATABASE=medstat;HOSTNAME=172.86.2.71;PORT=51230;PROTOCOL=TCPIP;UID=123132;PWD=123123;"
+print("ну файл запустился")
+# Подключение к DB2DATABASE
+DB2_DSN = "DATABASE=medstat;HOSTNAME=172.16.1.61;PORT=50000;PROTOCOL=TCPIP;UID=db2admin;PWD=1;"
 
 def get_db2_data():
-    """Выполняет SQL-запрос к DB2 и возвращает данные в виде списка словарей."""
+    """Выполняет SQL-запрос к DB2 и возвращает данные в виде pandas DataFrame, выводит и сохраняет в Excel."""
+    print("Пытаемся подключиться...")
     conn = ibm_db.connect(DB2_DSN, "", "")
     
     if not conn:
         raise Exception("Ошибка подключения к DB2")
-
+    
+    print("Успешно подключились к DB2")
+    
     sql_query = """
-        SELECT * FROM HISTORY h
-        LEFT JOIN RESEARCHES r ON r.KEY_HISTORY=h.key
-        LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY=r2.KEY_RESEARCH 
-        WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857')
+    SELECT 
+        h.KEY AS patient_key, 
+        r2.KEY_RESEARCH AS research_key, 
+        h.FIRSTNAME AS firstname, 
+        h.MIDDLENAME AS middlename, 
+        h.LASTNAME AS lastname, 
+        r2.RESULTFORMZAKL AS patient_result, 
+        h.SEX AS gender
+    FROM HISTORY h
+    LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
+    LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
+    WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857');
     """
 
     stmt = ibm_db.exec_immediate(conn, sql_query)
     cols = [ibm_db.field_name(stmt, i) for i in range(ibm_db.num_fields(stmt))]
     rows = []
-    
+
     result = ibm_db.fetch_assoc(stmt)
     while result:
-        rows.append({col: result[col] for col in cols})
+        rows.append([result[col] for col in cols])
         result = ibm_db.fetch_assoc(stmt)
 
     ibm_db.close(conn)
-    return rows
 
-if __name__ == "main":
-    data = get_db2_data()
-    print(pd.DataFrame(data))  # Выведем результат в виде таблицы
+    # Создаем DataFrame
+    df = pd.DataFrame(rows, columns=cols)
+
+    # Полный вывод без сокращений
+    pd.set_option("display.max_rows", None)  # Отобразить все строки
+    pd.set_option("display.max_columns", None)  # Отобразить все столбцы
+    pd.set_option("display.width", 1000)  # Увеличить ширину вывода
+    pd.set_option("display.max_colwidth", None)  # Полный вывод данных в ячейках
+
+    print(df)
+
+    # Сохранение в Excel
+    excel_path = "db2_data.xlsx"
+    df.to_excel(excel_path, index=False)
+    print(f"Данные сохранены в {excel_path}")
+
+
+data = get_db2_data()
+print(pd.DataFrame(data))  # Выведем результат в виде таблицы
