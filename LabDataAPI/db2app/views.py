@@ -7,15 +7,18 @@ import ibm_db_dbi
 import pandas as pd
 from .models import MedstatData
 from .db2_conn import DB2_DSN
-from .serializers import MedstatDataSerializer
+from .serializers import MedstatDataSerializer, MedstatRequestSerializer
 
 
 class MedstatDataViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"], url_path="get-patient")
     def get_patient_from_medstat(self, request):
-        research_key = request.query_params.get("research_key")
-        if not research_key:
-            return Response({"error": "Parameter 'research_key' is required"}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = MedstatRequestSerializer(data=request.query_params)
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        research_key = serializer.validated_data["research_key"]
         
         try:
             conn = ibm_db.connect(DB2_DSN, "", "")
@@ -43,16 +46,16 @@ class MedstatDataViewSet(viewsets.ViewSet):
             
             # Подготовка данных для сохранения
             data = {
-                "research_key": result["KEY_RESEARCH"],
-                "patient_result": result["RESULTFORMZAKL"],
-                "gender": result["SEX"],
-                "research_date": result["RESEARCHTIME"]
+                "research_key": result["RESEARCH_KEY"],
+                "patient_result": result["PATIENT_RESULT"],
+                "gender": result["GENDER"],
+                "research_date": result["RESEARCH_DATE"]
             }
             
             # Сохранение в PostgreSQL
-            serializer = MedstatDataSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
+            medstat_serializer = MedstatDataSerializer(data=data)
+            if medstat_serializer.is_valid():
+                medstat_serializer.save()
             
             return Response(data, status=status.HTTP_200_OK)
             
