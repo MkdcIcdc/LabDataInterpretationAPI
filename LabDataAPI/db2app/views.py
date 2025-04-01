@@ -6,10 +6,9 @@ import ibm_db
 import ibm_db_dbi
 import pandas as pd
 from .models import MedstatData
+from .db2_conn import DB2_DSN
 from .serializers import MedstatDataSerializer
 
-
-DB2_DSN = "DATABASE=medstat;HOSTNAME=175.76.1.27;PORT=123;PROTOCOL=TCPIP;UID=123;PWD=123;"
 
 class MedstatDataViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["get"], url_path="get-patient")
@@ -44,10 +43,10 @@ class MedstatDataViewSet(viewsets.ViewSet):
             
             # Подготовка данных для сохранения
             data = {
-                "research_key": result["RESEARCH_KEY"],
-                "patient_result": result["PATIENT_RESULT"],
-                "gender": result["GENDER"],
-                "research_date": result["RESEARCH_DATE"]
+                "research_key": result["KEY_RESEARCH"],
+                "patient_result": result["RESULTFORMZAKL"],
+                "gender": result["SEX"],
+                "research_date": result["RESEARCHTIME"]
             }
             
             # Сохранение в PostgreSQL
