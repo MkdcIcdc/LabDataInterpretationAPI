@@ -17,20 +17,20 @@ def get_db2_data():
     print("Успешно подключились к DB2")
     
     sql_query = """
-    SELECT 
-        h.KEY AS patient_key, 
-        r2.KEY_RESEARCH AS research_key, 
-        h.FIRSTNAME AS firstname, 
-        h.MIDDLENAME AS middlename, 
-        h.LASTNAME AS lastname, 
-        r2.RESULTFORMZAKL AS patient_result, 
-        h.SEX AS gender
-    FROM HISTORY h
+    SELECT * FROM HISTORY h
     LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
     LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
     WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857');
     """
-
+    # SELECT 
+    #     r2.KEY_RESEARCH AS research_key, 
+    #     r2.RESULTFORMZAKL AS patient_result, 
+    #     h.SEX AS gender
+    # FROM HISTORY h
+    # LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
+    # LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
+    # WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857');
+    
     stmt = ibm_db.exec_immediate(conn, sql_query)
     cols = [ibm_db.field_name(stmt, i) for i in range(ibm_db.num_fields(stmt))]
     rows = []
@@ -54,7 +54,7 @@ def get_db2_data():
     print(df)
 
     # Сохранение в Excel
-    excel_path = "db2_data.xlsx"
+    excel_path = "db2_data_full.xlsx"
     df.to_excel(excel_path, index=False)
     print(f"Данные сохранены в {excel_path}")
 
