@@ -4,7 +4,9 @@ from django.db import models
 class MedstatData(models.Model):
     
     """ Модель для хранения данных из БД """
-    
+    first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
     research_key = models.CharField(max_length=100, unique=True) #SQL KEY_RESEARCH
     patient_result = models.JSONField() #SQL RESULTFORMZAKL
     gender = models.CharField(max_length=10) #SQL SEX
