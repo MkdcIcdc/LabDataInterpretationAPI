@@ -3,18 +3,31 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 import ibm_db
 import ibm_db_dbi
 import pandas as pd
 from .models import MedstatData
 from .db2_conn import DB2_DSN
-from .serializers import MedstatDataSerializer, MedstatRequestSerializer
+from .serializers import MedstatDataSerializer
 
 
-class GetPatientFromMedstat(APIView):
-    def get(self, request):
-        serializer = MedstatRequestSerializer(data=request.query_params)
+class GetResearchResultFromMedstat(viewsets.ViewSet):
+    @action(detail=True, methods=["get"])
+    def get_patient_data(self, request, key_research=None):
+        
+    
+    pass
+
+
+class GetPatientResultFromMedstat(APIView):
+    permission_classes = (AllowAny,)
+    
+    def get(self, request, key_research=None):
+        
+        
+        serializer = MedstatDataSerializer(data=request.query_params)
         
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

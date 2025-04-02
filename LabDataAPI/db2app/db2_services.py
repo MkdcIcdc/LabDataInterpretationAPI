@@ -1,10 +1,11 @@
 import ibm_db
 import ibm_db_dbi
 import pandas as pd
+from db2_conn import DB2_DSN
 
 print("ну файл запустился")
 # Подключение к DB2DATABASE
-DB2_DSN = "DATABASE=medstat;HOSTNAME=175.76.1.27;PORT=123;PROTOCOL=TCPIP;UID=123;PWD=123;"
+# DB2_DSN = "DATABASE=medstat;HOSTNAME=175.76.1.27;PORT=123;PROTOCOL=TCPIP;UID=123;PWD=123;"
 
 def get_db2_data():
     """Выполняет SQL-запрос к DB2 и возвращает данные в виде pandas DataFrame, выводит и сохраняет в Excel."""
@@ -20,11 +21,17 @@ def get_db2_data():
     SELECT 
         r2.KEY_RESEARCH AS research_key, 
         r2.RESULTFORMZAKL AS patient_result, 
+        r.ACTUALDATETIME AS research_date,
+        h.FIRSTNAME AS first_name,
+        h.MIDDLENAME AS middle_name,
+        h.LASTNAME AS last_name,
         h.SEX AS gender
     FROM HISTORY h
     LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
     LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
-    WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857');
+    WHERE h.HISTORYNUMBER = '58081'
+    ORDER BY r.ACTUALDATETIME DESC
+    FETCH FIRST 5 ROWS ONLY;
     """
 
     
@@ -58,7 +65,7 @@ def get_db2_data():
     print(df)
 
     # Сохранение в Excel
-    excel_path = "db2_data_full.xlsx"
+    excel_path = "db2_data_58081.xlsx"
     df.to_excel(excel_path, index=False)
     print(f"Данные сохранены в {excel_path}")
 
