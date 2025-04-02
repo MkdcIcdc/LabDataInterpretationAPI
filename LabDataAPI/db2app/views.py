@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 import ibm_db
 import ibm_db_dbi
@@ -10,9 +12,8 @@ from .db2_conn import DB2_DSN
 from .serializers import MedstatDataSerializer, MedstatRequestSerializer
 
 
-class MedstatDataViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=["get"], url_path="get-patient")
-    def get_patient_from_medstat(self, request):
+class GetPatientFromMedstat(APIView):
+    def get(self, request):
         serializer = MedstatRequestSerializer(data=request.query_params)
         
         if not serializer.is_valid():
