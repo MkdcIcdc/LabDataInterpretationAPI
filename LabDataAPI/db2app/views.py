@@ -10,55 +10,39 @@ import pandas as pd
 from .models import MedstatData
 from .db2_conn import DB2_DSN
 from .serializers import MedstatDataSerializer, MedstatRequestSerializer
+from .db2_service import load_medstat_data
 
 
-class GetPatientFromMedstat(APIView):
-    def get(self, request):
-        serializer = MedstatRequestSerializer(data=request.query_params)
-        
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class MedstatDataViewSet(viewsets.ViewSet):
+    @action(detail=False, methods=["get"], url_path="load-medstat")
+    def load_medstat(self, request):
+        history_number = request.query_params.get("history_number")
 
-        research_key = serializer.validated_data["research_key"]
-        
-        try:
-            conn = ibm_db.connect(DB2_DSN, "", "")
-            if not conn:
-                return Response({"error": "Ошибка подключения к DB2"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            
-            sql_query = f'''
-            SELECT 
-                r2.KEY_RESEARCH AS research_key, 
-                r2.RESULTFORMZAKL AS patient_result, 
-                h.SEX AS gender,
-                r.RESEARCHTIME AS research_date
-            FROM HISTORY h
-            LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
-            LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
-            WHERE r2.KEY_RESEARCH = '{research_key}';
-            '''
-            
-            stmt = ibm_db.exec_immediate(conn, sql_query)
-            result = ibm_db.fetch_assoc(stmt)
-            ibm_db.close(conn)
-            
-            if not result:
-                return Response({"error": "Данные не найдены"}, status=status.HTTP_404_NOT_FOUND)
-            
-            # Подготовка данных для сохранения
-            data = {
-                "research_key": result["RESEARCH_KEY"],
-                "patient_result": result["PATIENT_RESULT"],
-                "gender": result["GENDER"],
-                "research_date": result["RESEARCH_DATE"]
-            }
-            
-            # Сохранение в PostgreSQL
-            medstat_serializer = MedstatDataSerializer(data=data)
-            if medstat_serializer.is_valid():
-                medstat_serializer.save()
-            
-            return Response(data, status=status.HTTP_200_OK)
-            
-        except Exception as e:
-            return Response({"error": f"Ошибка при выполнении запроса: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        if not history_number:
+            return Response({"error": "Параметр 'history_number' обязателен"}, status=status.HTTP_400_BAD_REQUEST)
+
+        medstat_data = load_medstat_data(history_number)
+
+        if isinstance(medstat_data, dict) and "error" in medstat_data:
+            return Response(medstat_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        if not medstat_data["researches"]:
+            return Response({"error": f"Нет данных для истории {history_number}"}, status=status.HTTP_404_NOT_FOUND)
+
+        saved_data = []
+        for research_key, research_info in medstat_data["researches"].items():
+            # Проверяем, есть ли уже такая запись
+            if not MedstatData.objects.filter(research_key=research_key).exists():
+                medstat_instance = MedstatData(
+                    first_name=medstat_data["fullname"].split()[1],
+                    middle_name=medstat_data["fullname"].split()[2] if len(medstat_data["fullname"].split()) > 2 else "",
+                    last_name=medstat_data["fullname"].split()[0],
+                    research_key=research_key,
+                    patient_result=research_info["patient_result"],
+                    gender=medstat_data["gender"],
+                    research_date=research_info["research_date"]
+                )
+                medstat_instance.save()
+                saved_data.append(MedstatDataSerializer(medstat_instance).data)
+
+        return Response(saved_data, status=status.HTTP_201_CREATED)
