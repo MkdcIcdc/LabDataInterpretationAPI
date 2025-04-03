@@ -11,48 +11,22 @@ import pandas as pd
 from .models import MedstatData
 from .db2_conn import DB2_DSN
 from .serializers import MedstatDataSerializer
-
-
-class GetResearchResultFromMedstat(viewsets.ViewSet):
-    @action(detail=True, methods=["get"])
-    def get_patient_data(self, request, key_research=None):
-        
-    
-    pass
-
-
-class GetPatientResultFromMedstat(APIView):
-    permission_classes = (AllowAny,)
-    
-    def get(self, request, key_research=None):
-        
-        
-        serializer = MedstatDataSerializer(data=request.query_params)
-        
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-=======
-from .serializers import MedstatDataSerializer, MedstatRequestSerializer
 from .db2_service import load_medstat_data
 
 
 class MedstatDataViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=["get"], url_path="load-medstat")
-    def load_medstat(self, request):
-        history_number = request.query_params.get("history_number")
->>>>>>> 20932bafdf2c36cf2a6dfa7723be21091d255d4c
-
+    @action(detail=True, methods=["get"], url_path="load-medstat")
+    def load_medstat(self, request, history_number):
         if not history_number:
             return Response({"error": "Параметр 'history_number' обязателен"}, status=status.HTTP_400_BAD_REQUEST)
-
         medstat_data = load_medstat_data(history_number)
-
+        print(medstat_data)
         if isinstance(medstat_data, dict) and "error" in medstat_data:
             return Response(medstat_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if not medstat_data["researches"]:
             return Response({"error": f"Нет данных для истории {history_number}"}, status=status.HTTP_404_NOT_FOUND)
-
+        
         saved_data = []
         for research_key, research_info in medstat_data["researches"].items():
             # Проверяем, есть ли уже такая запись
