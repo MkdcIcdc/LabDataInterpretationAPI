@@ -1,8 +1,10 @@
-from django.urls import path
+from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import GetPatientResultFromMedstat
+from .views import MedstatDataViewSet
 
-app_name = "db2app"
+router = DefaultRouter()
+router.register(r"medstat", MedstatDataViewSet, basename="medstat")
+
 urlpatterns = [
-    path("get-patient-result-from-medstat/", GetPatientResultFromMedstat.as_view(), name="get-patient-result-from-medstat"),
+    path("/get-data-from-medstat/", include(router.urls)),
 ]
