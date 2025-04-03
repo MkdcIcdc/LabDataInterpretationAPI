@@ -15,7 +15,7 @@ from .db2_service import load_medstat_data
 
 
 class MedstatDataViewSet(viewsets.ViewSet):
-    @action(detail=True, methods=["get"], url_path="load-medstat")
+    @action(detail=False, methods=["get"], url_path="load-medstat")
     def load_medstat(self, request, history_number):
         if not history_number:
             return Response({"error": "Параметр 'history_number' обязателен"}, status=status.HTTP_400_BAD_REQUEST)
