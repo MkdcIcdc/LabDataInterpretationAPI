@@ -14,9 +14,8 @@ from .serializers import MedstatDataSerializer
 from .db2_service import load_medstat_data
 
 
-class MedstatDataViewSet(viewsets.ViewSet):
-    @action(detail=False, methods=["get"], url_path="load-medstat")
-    def load_medstat(self, request, history_number):
+class LoadMedstatAPIView(APIView):
+    def get(self, request, history_number):
         if not history_number:
             return Response({"error": "Параметр 'history_number' обязателен"}, status=status.HTTP_400_BAD_REQUEST)
         medstat_data = load_medstat_data(history_number)
