@@ -2,6 +2,7 @@ from django.db import models
 
 
 class MedstatData(models.Model):
+
     
     """ Модель для хранения данных из БД """
     first_name = models.CharField(max_length=100)
@@ -15,9 +16,7 @@ class MedstatData(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        managed = False
-        db_table = "RESEARCHES"
-        app_label = "db2app"
+        db_table = "medstat_data"
         
     def __str__(self):
         return f"{self.fullname} ({self.id})"
