@@ -19,7 +19,6 @@ class LoadMedstatAPIView(APIView):
         if not history_number:
             return Response({"error": "Параметр 'history_number' обязателен"}, status=status.HTTP_400_BAD_REQUEST)
         medstat_data = load_medstat_data(history_number)
-        print(medstat_data)
         if isinstance(medstat_data, dict) and "error" in medstat_data:
             return Response(medstat_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -31,9 +30,11 @@ class LoadMedstatAPIView(APIView):
             # Проверяем, есть ли уже такая запись
             if not MedstatData.objects.filter(research_key=research_key).exists():
                 medstat_instance = MedstatData(
-                    first_name=medstat_data["fullname"].split()[1],
-                    middle_name=medstat_data["fullname"].split()[2] if len(medstat_data["fullname"].split()) > 2 else "",
-                    last_name=medstat_data["fullname"].split()[0],
+                    fullname=medstat_data["fullname"],
+                    history_number=history_number,
+                    # first_name=medstat_data["fullname"].split()[1],
+                    # middle_name=medstat_data["fullname"].split()[2] if len(medstat_data["fullname"].split()) > 2 else "",
+                    # last_name=medstat_data["fullname"].split()[0],
                     research_key=research_key,
                     patient_result=research_info["patient_result"],
                     gender=medstat_data["gender"],
