@@ -1,7 +1,7 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import LoadMedstatAPIView
+# urls.py
+from django.urls import path
+from .views import TriggerPipelineView
 
 urlpatterns = [
-    path('load-medstat/<str:history_number>/', LoadMedstatAPIView.as_view(), name='load_medstat'),
+    path("trigger-pipeline/", TriggerPipelineView.as_view(), name="trigger-pipeline"),
 ]

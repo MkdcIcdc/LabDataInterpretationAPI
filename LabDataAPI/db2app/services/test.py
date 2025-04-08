@@ -7,16 +7,17 @@ print("ну файл запустился")
 # Подключение к DB2DATABASE
 # DB2_DSN = "DATABASE=medstat;HOSTNAME=175.76.1.27;PORT=123;PROTOCOL=TCPIP;UID=123;PWD=123;"
 
+
 def get_db2_data():
     """Выполняет SQL-запрос к DB2 и возвращает данные в виде pandas DataFrame, выводит и сохраняет в Excel."""
     print("Пытаемся подключиться...")
     conn = ibm_db.connect(DB2_DSN, "", "")
-    
+
     if not conn:
         raise Exception("Ошибка подключения к DB2")
-    
+
     print("Успешно подключились к DB2")
-    
+
     sql_query = """    
     SELECT 
         r2.KEY_RESEARCH AS research_key, 
@@ -34,14 +35,13 @@ def get_db2_data():
     FETCH FIRST 5 ROWS ONLY;
     """
 
-    
     # """
     # SELECT * FROM HISTORY h
     # LEFT JOIN RESEARCHES r ON r.KEY_HISTORY = h.KEY
     # LEFT JOIN RESEARCH_RESULTSR2 r2 ON r.KEY = r2.KEY_RESEARCH
     # WHERE h.HISTORYNUMBER IN ('0026','0027','58081','6857');
     # """
-    
+
     stmt = ibm_db.exec_immediate(conn, sql_query)
     cols = [ibm_db.field_name(stmt, i) for i in range(ibm_db.num_fields(stmt))]
     rows = []

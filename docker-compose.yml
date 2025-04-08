@@ -1,0 +1,47 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    container_name: labdata_service
+    volumes:
+      - .:/app
+    ports:
+      - "8004:8004"
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_SETTINGS_MODULE=LabDataAPI.config.settings
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: labpam_redis
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    restart: unless-stopped
+
+  celery:
+    build: .
+    container_name: labpam_celery
+    command: celery -A LabDataAPI worker -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_SETTINGS_MODULE=LabDataAPI.config.settings
+
+  celery-beat:
+    build: .
+    container_name: labdata_celery_beat
+    command: celery -A LabDataAPI beat -l info
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_SETTINGS_MODULE=LabDataAPI.config.settings
+

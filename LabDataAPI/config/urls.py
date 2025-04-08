@@ -5,10 +5,11 @@ from drf_yasg import openapi
 from django.conf.urls import include
 
 
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Patient Data API",
-        default_version='v1',
+        default_version="v1",
         description="API для взаимодействия с нейросетью и базы МЕДСТАТ",
     ),
     public=True,
@@ -16,8 +17,15 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path("api/", include("api.urls")),
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
     path("db2app/", include("db2app.urls")),
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    re_path(
+        r"^swagger(?P<format>\.json|\.yaml)$",
+        schema_view.without_ui(cache_timeout=0),
+        name="schema-json",
+    ),
 ]

@@ -2,7 +2,8 @@ import ibm_db
 import ibm_db_dbi
 import pandas as pd
 from .db2_conn import DB2_DSN
- 
+
+
 def load_medstat_data(history_number):
     print("оказались в методе")
     conn = ibm_db.connect(DB2_DSN, "", "")
@@ -10,8 +11,8 @@ def load_medstat_data(history_number):
     try:
         if not conn:
             raise Exception("Ошибка подключения к DB2")
-        
-        sql_query = f'''
+
+        sql_query = f"""
             SELECT 
                 r2.KEY_RESEARCH AS research_key, 
                 r2.RESULTFORMZAKL AS patient_result, 
@@ -26,24 +27,24 @@ def load_medstat_data(history_number):
             WHERE h.HISTORYNUMBER = '{history_number}'
             ORDER BY r.ACTUALDATETIME DESC
             FETCH FIRST 5 ROWS ONLY;
-        '''
-        
+        """
+
         stmt = ibm_db.exec_immediate(conn, sql_query)
-        
+
         # Базовая структура для хранения данных
         medstat_data = {
             "history_number": history_number,
             "fullname": None,
             "gender": None,
-            "researches": {}  # Словарь исследований по ключу research_key
+            "researches": {},  # Словарь исследований по ключу research_key
         }
-        
+
         row = ibm_db.fetch_assoc(stmt)
-        
+
         while row:
             research_key = row.get("RESEARCH_KEY")
             patient_result = row.get("PATIENT_RESULT")
-            
+
             # Пропускаем записи без research_key или patient_result
             if not research_key or not patient_result:
                 row = ibm_db.fetch_assoc(stmt)
@@ -51,15 +52,17 @@ def load_medstat_data(history_number):
 
             # Заполняем ФИО и пол только один раз
             if medstat_data["fullname"] is None:
-                medstat_data["fullname"] = f"{row['LAST_NAME']} {row['FIRST_NAME']} {row['MIDDLE_NAME']}".strip()
+                medstat_data["fullname"] = (
+                    f"{row['LAST_NAME']} {row['FIRST_NAME']} {row['MIDDLE_NAME']}".strip()
+                )
                 medstat_data["gender"] = row["GENDER"]
 
             # Упаковываем данные исследования
             medstat_data["researches"][research_key] = {
                 "research_date": row["RESEARCH_DATE"],
-                "patient_result": patient_result
+                "patient_result": patient_result,
             }
-            
+
             row = ibm_db.fetch_assoc(stmt)
 
         ibm_db.close(conn)
@@ -71,5 +74,6 @@ def load_medstat_data(history_number):
 
     except Exception as e:
         return {"error": f"Произошла ошибка: {str(e)}"}
+
 
 # print(load_medstat_data("58081"))
