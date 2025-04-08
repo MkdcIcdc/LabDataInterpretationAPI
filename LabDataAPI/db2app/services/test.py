@@ -5,7 +5,6 @@ from db2_conn import DB2_DSN
 
 print("ну файл запустился")
 # Подключение к DB2DATABASE
-# DB2_DSN = "DATABASE=medstat;HOSTNAME=175.76.1.27;PORT=123;PROTOCOL=TCPIP;UID=123;PWD=123;"
 
 
 def get_db2_data():
