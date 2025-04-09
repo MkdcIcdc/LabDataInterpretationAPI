@@ -11,19 +11,21 @@ load_dotenv(env_path)
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "o_4rl)h!^2&jp)@zen%f(ein!cfqhfe(#=xbra0gwnpbegtqd4"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 NEW_APPS = [
     "rest_framework",
-    "api",
     "db2app",
     "ibm_db_django",
     "pandas",
+    "drf_yasg",
+    "django_celery_results",
+    "drf_spectacular",
 ]
 # Application definition
 
@@ -76,25 +78,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "LabResearchData",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "localhost",
-        "PORT": "5432",
-    },
-    'db2': {
-        "ENGINE": "ibm_db_django",
-        "NAME": "medstat",
-        "USER": "db2admin",
-        "PASSWORD": "1",
-        "HOST": "172.16.1.61",
-        "PORT": "50000",
-        "OPTIONS": {
-            "DATABASE": "medstat",
-            "PROTOCOL": "TCPIP",
-        }
+        "NAME": os.getenv("DB_NAME"),
+        "USER": os.getenv("DB_USER"),
+        "PASSWORD": os.getenv("DB_PASSWORD"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
+
 
 
 # Password validation
@@ -138,3 +129,30 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # AUTH_USER_MODEL = "api.User"
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework.authentication.SessionAuthentication",
+        # 'rest_framework.authentication.BasicAuthentication',
+    ),
+    "DEFAULT_PERMISSION_CLASSES": (
+        # 'rest_framework.permissions.IsAdminUser',
+        "rest_framework.permissions.AllowAny",
+        # 'rest_framework.authentication.SessionAuthentication',
+    ),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'LabDataTrigger',
+    'DESCRIPTION': 'Документация вашего API',
+    'VERSION': '1.0.0',
+}
+
+# Настройки Celery
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
